@@ -24,8 +24,13 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "^6.7.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^3.24.3",
+    "zod-dto": "^1.0.1",
+    "zod-prisma": "^0.5.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

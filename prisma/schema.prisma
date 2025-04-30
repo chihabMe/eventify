@@ -17,5 +17,5 @@ model Book {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title String 
   author String 
-  publishedAt DateTime
+  publishedAt DateTime @default(now())
 }
