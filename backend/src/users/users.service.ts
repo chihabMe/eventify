@@ -34,6 +34,21 @@ export class UsersService {
     });
     return user;
   }
+  generateEmailVerificationToken(userId: string) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return this.prisma.emailVerificationToken.create({
+        data: {
+          userId: userId,
+          token: this.hashService.generateRandomToken(),
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
   async findUserById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: {

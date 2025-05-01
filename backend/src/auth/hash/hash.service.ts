@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { hash, compare } from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class HashService {
@@ -13,5 +14,9 @@ export class HashService {
     {
       return compare(password, hashedPassword);
     }
+  }
+
+  generateRandomToken() {
+    return randomBytes(32).toString('hex');
   }
 }

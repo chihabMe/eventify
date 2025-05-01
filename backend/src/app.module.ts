@@ -9,6 +9,7 @@ import { CustomZodValidationPipe } from './common/pipes/custom-zod-validation.pi
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ControllerModule } from './controller/controller.module';
+import { EmailService } from './email/email.service';
 
 @Module({
   imports: [BooksModule, PrismaModule, AuthModule, UsersModule, ControllerModule],
@@ -20,6 +21,7 @@ import { ControllerModule } from './controller/controller.module';
       provide: APP_PIPE,
       useClass: CustomZodValidationPipe,
     },
+    EmailService,
   ],
 })
 export class AppModule {}
