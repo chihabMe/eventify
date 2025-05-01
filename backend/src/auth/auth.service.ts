@@ -1,10 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { HashService } from './hash/hash.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './auth.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as dayjs from 'dayjs';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -15,49 +20,119 @@ export class AuthService {
   ) {}
 
   async login(data: LoginDto) {
-    const user = await this.validateUser(data.email, data.password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    try {
+      const user = await this.validateUser(data.email, data.password);
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      return {
+        access_token: await this.generateAccessToken(user.id, user.role),
+        refresh_token: await this.generateRefreshToken(user.id),
+      };
+    } catch {
+      // log error here if needed
+      throw new InternalServerErrorException(
+        'Failed to login. Please try again.',
+      );
     }
-    return {
-      access_token: await this.generateAccessToken(user.id, user.role),
-      refresh_token: await this.generateRefreshToken(user.id),
-    };
   }
+
+  async refreshAccessToken(refreshToken: string) {
+    try {
+      const refresh = await this.isRefreshTokenValid(refreshToken);
+      if (!refresh) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+
+      return {
+        access_token: await this.generateAccessToken(refresh.sub, refresh.role),
+      };
+    } catch {
+      // log error here
+      throw new UnauthorizedException('Refresh token is not valid');
+    }
+  }
+
   async generateAccessToken(userId: string, role: string) {
-    return this.jwtService.signAsync({ sub: userId, role });
+    try {
+      return await this.jwtService.signAsync({ sub: userId, role });
+    } catch {
+      throw new InternalServerErrorException('Failed to generate access token');
+    }
+  }
+
+  isTokenValid(token: string) {
+    try {
+      const payload = this.jwtService.verify<{
+        sub: string;
+        role: string;
+        expiredAt: Date;
+      }>(token);
+
+      if (!payload || payload.expiredAt < new Date()) {
+        return null;
+      }
+
+      return payload;
+    } catch {
+      return null;
+    }
+  }
+
+  async isRefreshTokenValid(token: string) {
+    try {
+      const payload = this.isTokenValid(token);
+      if (!payload) return null;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const refreshToken = await this.prismaService.refreshToken.findFirst({
+        where: { token, userId: payload.sub },
+      });
+
+      if (!refreshToken) return null;
+      return payload;
+    } catch {
+      return null;
+    }
   }
 
   async generateRefreshToken(userId: string): Promise<string> {
-    const token = await this.jwtService.signAsync(
-      { sub: userId },
-      { expiresIn: '30d' },
-    );
+    try {
+      const token = await this.jwtService.signAsync(
+        { sub: userId },
+        { expiresIn: '30d' },
+      );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    await this.prismaService.refreshToken.create({
-      data: {
-        token,
-        userId,
-        expiresAt: dayjs().add(30, 'days').toDate(),
-      },
-    });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      await this.prismaService.refreshToken.create({
+        data: {
+          token,
+          userId,
+          expiresAt: dayjs().add(30, 'days').toDate(),
+        },
+      });
 
-    return token;
+      return token;
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to generate refresh token',
+      );
+    }
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.usersService.findUserByEmail(email);
-    if (!user) {
+    try {
+      const user = await this.usersService.findUserByEmail(email);
+      if (!user) return null;
+
+      const isPasswordValid = await this.hashService.comparePassword(
+        password,
+        user.password,
+      );
+      return isPasswordValid ? user : null;
+    } catch {
       return null;
     }
-    const isPasswordValid = await this.hashService.comparePassword(
-      password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-    return user;
   }
 }

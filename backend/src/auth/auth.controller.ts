@@ -14,4 +14,12 @@ export class AuthController {
       tokens,
     };
   }
+  @Post('token/refresh')
+  async refreshToken(@Body('refresh_token') refreshToken: string) {
+    const tokens = await this.authService.refreshAccessToken(refreshToken);
+    return {
+      message: 'Refresh token successful',
+      tokens,
+    };
+  }
 }

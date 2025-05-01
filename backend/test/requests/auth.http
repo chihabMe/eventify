@@ -7,3 +7,14 @@ Content-Type: application/json
     "password":"password"
 }
 
+### Get all events
+POST http://localhost:3000/auth/token/refresh
+Content-Type: application/json
+
+{
+    "refresh_token":"eyJhGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODEzOWNlZjczOWVkZWRiYjlhZjY0ZWYiLCJpYXQiOjE3NDYxMTkwNDIsImV4cCI6MTc0ODcxMTA0Mn0.DzBWaBHutaPGYTq5T4PAcjIxEwmUChW7XPXXvWfYW98"
+}
+
+
+
+
