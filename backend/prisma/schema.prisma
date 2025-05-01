@@ -24,6 +24,13 @@ enum Role {
   ORGANIZER 
   ADMIN
 }
+model RefreshToken {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+  token String
+  expiresAt DateTime
+}
 model User {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   email String @unique
@@ -38,6 +45,7 @@ model User {
   bookings Booking[]
   reviews Review[]  
   eventsOrganized Event[] @relation("Organizer")
+  refreshTokens RefreshToken[]
 }
 model Event {
   id String @id @default(auto()) @map("_id") @db.ObjectId
