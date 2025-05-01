@@ -8,8 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { Book } from 'generated/prisma';
 import { CreateBookDto } from './dto/create-book.dto';
+import { UpdateBookDto } from './dto/update-book.dto';
 
 @Controller('books')
 export class BooksController {
@@ -28,7 +28,7 @@ export class BooksController {
     return this.bookService.findOne(id);
   }
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Omit<Book, 'id'>>) {
+  update(@Param('id') id: string, @Body() data: UpdateBookDto) {
     return this.bookService.update(id, data);
   }
   @Delete(':id')
