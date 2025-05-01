@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+model Book {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title String 
+  author String 
+  publishedAt DateTime @default(now())
+}
+enum Role {
+  USER
+  ORGANIZER 
+  ADMIN
+}
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  email String @unique
+  password String
+  firstName String 
+  lastName String 
+  isActive Boolean @default(false)
+  isEmailVerified Boolean @default(false)
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  bookings Booking[]
+  reviews Review[]  
+  eventsOrganized Event[] @relation("Organizer")
+}
+model Event {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  title String
+  slug String @unique
+  description String
+  location String
+  capacity Int
+  startsAt DateTime
+  endsAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  category EventCategory @relation(fields: [categoryId], references: [id],name: "Category")
+  categoryId String @db.ObjectId
+
+  organizer User @relation(fields: [organizerId], references: [id],name: "Organizer")
+  organizerId String @db.ObjectId
+
+  bookings Booking[]
+  reviews Review[]
+}
+
+
+model EventCategory {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String 
+  slug String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  events Event[]@relation("Category")
+}
+model Booking {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  event Event @relation(fields: [eventId], references: [id])
+  eventId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  user User @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  event Event @relation(fields: [eventId], references: [id])
+  eventId String @db.ObjectId
+
+  rating Int
+  comment String?
+
+  createdAt DateTime @default(now())
+}
+
