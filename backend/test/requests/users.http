@@ -1,0 +1,13 @@
+
+### Create a new book
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email":"john.doe@gmail.com",
+    "password":"password",
+    "passwordConfirmation":"password",
+    "userType":"USER"
+}
