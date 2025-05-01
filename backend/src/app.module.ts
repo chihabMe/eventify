@@ -4,19 +4,30 @@ import { AppService } from './app.service';
 import { BooksModule } from './books/books.module';
 import { PrismaService } from './prisma.service';
 import { PrismaModule } from './prisma.module';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { CustomZodValidationPipe } from './common/pipes/custom-zod-validation.pipe';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ControllerModule } from './controller/controller.module';
 import { EmailService } from './email/email.service';
+import { RolesGuard } from './common/guard/roles.guard';
 
 @Module({
-  imports: [BooksModule, PrismaModule, AuthModule, UsersModule, ControllerModule],
+  imports: [
+    BooksModule,
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    ControllerModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard,
+    // },
     {
       provide: APP_PIPE,
       useClass: CustomZodValidationPipe,

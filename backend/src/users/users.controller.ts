@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './users.dto';
 import { EmailService } from 'src/email/email.service';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -52,6 +54,19 @@ export class UsersController {
       console.error(err);
       return {
         message: 'Failed to create user',
+      };
+    }
+  }
+  @Get()
+  @Roles('USER')
+  async findAll() {
+    try {
+      const users = await this.usersService.findAllUsers();
+      return users;
+    } catch (err) {
+      console.error(err);
+      return {
+        message: 'Failed to fetch users',
       };
     }
   }

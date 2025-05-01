@@ -11,3 +11,8 @@ Content-Type: application/json
     "passwordConfirmation":"password",
     "userType":"USER"
 }
+
+
+### get all users 
+GET http://localhost:8000/auth/me
+Content-Type: application/json
