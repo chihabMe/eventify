@@ -1,10 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ZodValidationPipe } from 'nestjs-zod';
-// import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(helmet());
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  app.use(cookieParser());
+  app.enableCors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  });
   app.useGlobalPipes(new ZodValidationPipe());
   // app.useGlobalPipes(
   //   new ValidationPipe({
@@ -12,6 +21,6 @@ async function bootstrap() {
 
   //   }),
   // );
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 8000);
 }
 bootstrap();

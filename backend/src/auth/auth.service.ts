@@ -135,4 +135,32 @@ export class AuthService {
       return null;
     }
   }
+  async logout(refreshToken: string, userId: string) {
+    try {
+      const token = await this.prismaService.refreshToken.findFirst({
+        where: { token: refreshToken, userId },
+      });
+
+      if (!token) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const refreshTokenRecord =
+        await this.prismaService.refreshToken.findFirst({
+          where: { token: refreshToken, userId },
+        });
+
+      if (!refreshTokenRecord) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      await this.prismaService.refreshToken.delete({
+        where: { id: refreshTokenRecord.id },
+      });
+
+      return true;
+    } catch {
+      throw new InternalServerErrorException('Logout failed');
+    }
+  }
 }

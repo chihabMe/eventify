@@ -13,96 +13,101 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
 model Book {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title String 
-  author String 
+  title       String
+  author      String
   publishedAt DateTime @default(now())
 }
+
 enum Role {
   USER
-  ORGANIZER 
+  ORGANIZER
   ADMIN
 }
+
 model RefreshToken {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  user User @relation(fields: [userId], references: [id])
-  userId String @db.ObjectId
-  token String 
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  token     String
   expiresAt DateTime
-  @@index([token,userId])
+
+  @@index([token, userId])
 }
+
 model User {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  email String @unique
-  password String
-  firstName String 
-  lastName String 
-  isActive Boolean @default(false)
-  isEmailVerified Boolean @default(false)
-  role Role @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
-  bookings Booking[]
-  reviews Review[]  
-  eventsOrganized Event[] @relation("Organizer")
-  refreshTokens RefreshToken[]
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  email           String         @unique
+  password        String
+  firstName       String
+  lastName        String
+  isActive        Boolean        @default(false)
+  isEmailVerified Boolean        @default(false)
+  role            Role           @default(USER)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+  bookings        Booking[]
+  reviews         Review[]
+  eventsOrganized Event[]        @relation("Organizer")
+  refreshTokens   RefreshToken[]
 }
+
 model Event {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
-  slug String @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
   description String
-  location String
-  capacity Int
-  startsAt DateTime
-  endsAt DateTime
+  location    String
+  capacity    Int
+  startsAt    DateTime
+  endsAt      DateTime
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
-  category EventCategory @relation(fields: [categoryId], references: [id],name: "Category")
-  categoryId String @db.ObjectId
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @default(now()) @updatedAt
+  category   EventCategory @relation(fields: [categoryId], references: [id], name: "Category")
+  categoryId String        @db.ObjectId
 
-  organizer User @relation(fields: [organizerId], references: [id],name: "Organizer")
+  organizer   User   @relation(fields: [organizerId], references: [id], name: "Organizer")
   organizerId String @db.ObjectId
 
   bookings Booking[]
-  reviews Review[]
+  reviews  Review[]
 }
 
-
 model EventCategory {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String 
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
   slug String @unique
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  events Event[]@relation("Category")
+  events Event[] @relation("Category")
 }
+
 model Booking {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  user User @relation(fields: [userId], references: [id])
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
   userId String @db.ObjectId
 
-  event Event @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id])
   eventId String @db.ObjectId
 
   createdAt DateTime @default(now())
 }
 
 model Review {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  user User @relation(fields: [userId], references: [id])
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
   userId String @db.ObjectId
 
-  event Event @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id])
   eventId String @db.ObjectId
 
-  rating Int
+  rating  Int
   comment String?
 
   createdAt DateTime @default(now())
 }
-
