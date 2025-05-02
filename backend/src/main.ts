@@ -4,6 +4,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 import { ConsoleLogger } from '@nestjs/common';
+import { CustomBadRequestExceptionFilter } from './common/filters/custom-badrequest.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -21,6 +22,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
   app.useGlobalPipes(new ZodValidationPipe());
+  app.useGlobalFilters(new CustomBadRequestExceptionFilter());
 
   await app.listen(process.env.PORT ?? 8000);
 }
