@@ -25,4 +25,4 @@ COPY . .
 RUN npm run build
 
 # Command is now overridden by docker-compose
-CMD ["npm", "start"]
+CMD ["node", "dist/main"]
