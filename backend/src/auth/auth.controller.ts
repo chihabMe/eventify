@@ -65,8 +65,18 @@ export class AuthController {
   @isPublic()
   @HttpCode(HttpStatus.OK)
   @Post('token/refresh')
-  async refreshToken(@Body('refresh_token') refreshToken: string) {
+  async refreshToken(
+    @Body('refresh_token') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const tokens = await this.authService.refreshAccessToken(refreshToken);
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: jwtConstants.refreshTokenLifetime.asNumber,
+    });
+
     return {
       message: 'Refresh token successful',
       tokens,

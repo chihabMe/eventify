@@ -14,12 +14,16 @@ RUN npm install
 
 COPY . . 
 
+## generate prisma client
+
+RUN npx prisma generate
 # building the application
+
 RUN npm run build
 
 CMD ["node","dist/main"]
 
 # exposing the port 3000
-EXPOSE 3000
+EXPOSE 8000
 
 

@@ -1,12 +1,90 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Event, User } from 'generated/prisma';
 import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
   readonly resend = new Resend(process.env.RESEND_API_KEY);
+  async sendEventCreatingEmail({
+    user,
+    event,
+  }: {
+    user: Omit<User, 'password'>;
+    event: Event;
+  }) {
+    try {
+      return this.resend.emails.send({
+        from: process.env.FROM_EMAIL ?? 'eventify@eventify.chihab.tech.com',
+        to: [user.email],
+        subject: 'Event Created',
+        html: `
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Event Created</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                padding: 20px;
+              }
+              .container {
+                max-width: 600px;
+                margin: auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+              }
+
+              h1 {
+                color: #333;
+              }
+              p {
+                font-size: 16px;
+                line-height: 1.5;
+              }
+              .button {
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 5px;
+              }
+              .button:hover {
+                background-color: #0056b3;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Event Created Successfully</h1>
+              <p>Hi ${user.firstName},</p>
+              <p>Your event "${event.title}" has been created successfully.</p>
+              <p>Event Details:</p>
+              <ul>
+                <li><strong>Title:</strong> ${event.title}</li>
+                <li><strong>Date:</strong> ${event.startsAt.toISOString()} to ${event.endsAt.toISOString()}</li>
+                <li><strong>Location:</strong> ${event.location}</li>
+              </ul>
+              <p>Thank you for using our service!</p>
+            </div>
+          </body>
+        </html>
+        `,
+      });
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException("can't send the email");
+    }
+  }
   async sendVerificationEmail(email: string, userId: string, token: string) {
     return this.resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'default@chihab.tech',
+      from: process.env.EMAIL_FROM ?? 'default@eventify.chihab.tech',
       to: [email],
       subject: 'Verify your email',
       html: `

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BooksModule } from './books/books.module';
 import { PrismaService } from './prisma.service';
 import { PrismaModule } from './prisma.module';
 import { APP_GUARD, APP_PIPE, Reflector } from '@nestjs/core';
@@ -15,15 +14,18 @@ import { RolesGuard } from './common/guard/roles.guard';
 import { AuthService } from './auth/auth.service';
 import { UsersService } from './users/users.service';
 import { HashService } from './auth/hash/hash.service';
+import { ConfigModule } from '@nestjs/config';
 // import { RolesGuard } from './common/guard/roles.guard';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
-    BooksModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
     UsersModule,
     ControllerModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [
