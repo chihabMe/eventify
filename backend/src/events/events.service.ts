@@ -83,8 +83,8 @@ export class EventsService {
         ...data,
         organizerId: organizerId,
         categoryId: data.categoryId,
-        startsAt: data.startsAt,
-        endsAt: data.endsAt,
+        startsAt: new Date(data.startsAt),
+        endsAt: new Date(data.endsAt),
       },
     });
     if (!event) {

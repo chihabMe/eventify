@@ -1,3 +1,4 @@
+import { Role } from 'generated/prisma';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
@@ -12,7 +13,7 @@ const CreateUserSchema = z
     passwordConfirmation: z
       .string()
       .min(8, { message: 'Password confirmation is required' }),
-    userType: z.enum(['USER', 'ORGANIZER'], {
+    userType: z.enum([Role.USER, Role.ORGANIZER], {
       errorMap: () => ({ message: 'Invalid user type' }),
     }),
   })
