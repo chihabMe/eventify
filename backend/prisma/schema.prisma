@@ -86,6 +86,7 @@ model Event {
 
   bookings Booking[]
   reviews  Review[]
+  tags     String[]
 }
 
 model EventCategory {

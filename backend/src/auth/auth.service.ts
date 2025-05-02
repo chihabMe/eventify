@@ -26,6 +26,9 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      if (!user.isActive || !user.isEmailVerified) {
+        throw new UnauthorizedException('User is not active');
+      }
       return {
         access_token: await this.generateAccessToken(user.id, user.role),
         refresh_token: await this.generateRefreshToken(user.id),

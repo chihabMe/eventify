@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { HashService } from 'src/auth/hash/hash.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
+import { Role } from 'generated/prisma';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,10 @@ export class UsersService {
   ) {}
   async createUser(data: CreateUserDto) {
     const { password, userType, ...rest } = data;
+    const uniqueEmail = await this.isEmailUnique(rest.email);
+    if (!uniqueEmail) {
+      throw new InternalServerErrorException('Email already exists');
+    }
     const hashedPassword = await this.hashService.hashPassword(password);
 
     return await this.prisma.user.create({
@@ -33,6 +38,11 @@ export class UsersService {
       },
     });
     return user;
+  }
+
+  async isEmailUnique(email: string) {
+    const user = await this.findUserByEmail(email);
+    return !user;
   }
   generateEmailVerificationToken(userId: string) {
     try {
@@ -85,5 +95,45 @@ export class UsersService {
       },
     });
     return user;
+  }
+
+  async findUsersByRole(role: Role) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        role,
+      },
+    });
+    return users;
+  }
+
+  async verifyEmail(userId: string, token: string) {
+    const emailVerificationToken =
+      await this.prisma.emailVerificationToken.findFirst({
+        where: {
+          token,
+          userId,
+        },
+      });
+    if (!emailVerificationToken) {
+      return false;
+    }
+    if (emailVerificationToken.expiresAt < new Date()) {
+      return false;
+    }
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+    await this.prisma.emailVerificationToken.delete({
+      where: {
+        id: emailVerificationToken.id,
+      },
+    });
+    return true;
   }
 }
