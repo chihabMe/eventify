@@ -1,29 +1,28 @@
-#setting up the nodejs apline image 
+# FROM node:20-alpine
+#FROM node:lts-alpine3.17
+FROM node:slim
 
-FROM node:20-alpine
+RUN apt-get update -y \
+&& apt-get install -y openssl
 
-# setting up the working directory
+
 
 WORKDIR /app
 
-# copying the package.json and package-lock.json files to the working directory
 COPY package*.json ./
+RUN npm install
 
-# this is done to install the dependencies before copying the rest of the files
-RUN npm install 
+# Copy prisma schema before the rest of the code
+COPY prisma ./prisma/
 
-COPY . . 
-
-## generate prisma client
-
+# Generate Prisma client during build
 RUN npx prisma generate
-# building the application
 
+# Now copy the rest of the application
+COPY . .
+
+# Build the application
 RUN npm run build
 
-CMD ["node","dist/main"]
-
-# exposing the port 3000
-EXPOSE 8000
-
-
+# Command is now overridden by docker-compose
+CMD ["npm", "start"]
