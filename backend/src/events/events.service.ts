@@ -1,8 +1,17 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { CreateEventCategoryDto, CreateEventDto } from './event.dto';
+import {
+  CreateEventCategoryDto,
+  CreateEventDto,
+  UpdateEventCategoryDto,
+} from './event.dto';
 import slugify from 'slugify';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
+import { Role, User } from 'generated/prisma';
 
 @Injectable()
 export class EventsService {
@@ -14,8 +23,20 @@ export class EventsService {
         slug,
       },
       include: {
-        organizer: true,
-        category: true,
+        organizer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         _count: {
           select: {
             bookings: true,
@@ -100,7 +121,21 @@ export class EventsService {
   //     });
   // }
 
-  async deleteEvent(id: string) {
+  async deleteEvent(user: Omit<User, 'password'>, id: string) {
+    const event = await this.prismaService.event.findUnique({
+      where: { id },
+    });
+    if (!event) {
+      throw new CustomBadRequestException({
+        message: 'Event not found',
+        errors: [{ field: 'id', message: 'Event not found' }],
+      });
+    }
+    if (event.organizerId !== user.id && user.role !== Role.ADMIN) {
+      throw new UnauthorizedException(
+        'You are not authorized to delete this event',
+      );
+    }
     return this.prismaService.event.delete({
       where: { id },
     });
@@ -108,8 +143,20 @@ export class EventsService {
   async getAllEvents() {
     return this.prismaService.event.findMany({
       include: {
-        organizer: true,
-        category: true,
+        organizer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         _count: {
           select: {
             bookings: true,
@@ -138,5 +185,37 @@ export class EventsService {
       console.error(err);
       throw new InternalServerErrorException('Failed to create event category');
     }
+  }
+  async getAllEventCategories() {
+    return this.prismaService.eventCategory.findMany();
+  }
+  async deleteEventCategory(id: string) {
+    const category = await this.prismaService.eventCategory.findUnique({
+      where: { id },
+    });
+    if (!category) {
+      throw new CustomBadRequestException({
+        message: 'Event category not found',
+        errors: [{ field: 'id', message: 'Event category not found' }],
+      });
+    }
+    return this.prismaService.eventCategory.delete({
+      where: { id },
+    });
+  }
+  async updateEventCategory(id: string, data: UpdateEventCategoryDto) {
+    const category = await this.prismaService.eventCategory.findUnique({
+      where: { id },
+    });
+    if (!category) {
+      throw new CustomBadRequestException({
+        message: 'Event category not found',
+        errors: [{ field: 'id', message: 'Event category not found' }],
+      });
+    }
+    return this.prismaService.eventCategory.update({
+      where: { id },
+      data,
+    });
   }
 }

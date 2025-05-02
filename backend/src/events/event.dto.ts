@@ -68,9 +68,16 @@ export const UpdateEventSchema = z.object({
 const CreateEventCategorySchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
 });
+const UpdateEventCategorySchema = z.object({
+  name: z.string().optional(),
+});
 
 export class CreateEventDto extends createZodDto(CreateEventSchema) {}
 export class UpdateEventDto extends createZodDto(UpdateEventSchema) {}
 export class CreateEventCategoryDto extends createZodDto(
   CreateEventCategorySchema,
+) {}
+
+export class UpdateEventCategoryDto extends createZodDto(
+  UpdateEventCategorySchema,
 ) {}
