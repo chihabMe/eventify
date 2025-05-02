@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: eventify-backend
+    ports:
+      - "8888:8000"
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET=${SECRET_KEY}
+      - CLIENT_URL=${CLIENT_URL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
