@@ -5,9 +5,8 @@ export class CustomZodException extends BadRequestException {
   constructor(error: ZodError) {
     // Format the Zod errors
     const formattedErrors = error.errors.map((err) => ({
-      path: err.path.join('.'),
+      field: err.path.join('.'),
       message: err.message,
-      code: err.code,
     }));
 
     // Call the parent class constructor with the formatted error object

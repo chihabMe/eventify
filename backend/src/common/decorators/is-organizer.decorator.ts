@@ -1,4 +1,4 @@
 import { Role } from 'generated/prisma';
 import { Roles } from './roles.decorator';
 
-export const isAdmin = () => Roles(Role.ADMIN);
+export const isOrganizer = () => Roles(Role.ORGANIZER);
