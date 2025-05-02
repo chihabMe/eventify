@@ -21,12 +21,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
   app.useGlobalPipes(new ZodValidationPipe());
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     transform: true,
 
-  //   }),
-  // );
   await app.listen(process.env.PORT ?? 8000);
 }
 bootstrap();

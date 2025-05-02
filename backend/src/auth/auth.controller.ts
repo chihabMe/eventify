@@ -13,12 +13,14 @@ import type { Request as ExpressRequest, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './auth.dto';
 import { jwtConstants } from 'src/common/constants';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from '../common/guard/auth.guard';
+import { isPublic } from 'src/common/decorators/is-public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @isPublic()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
@@ -60,6 +62,8 @@ export class AuthController {
       message: 'Logout successful',
     };
   }
+  @isPublic()
+  @HttpCode(HttpStatus.OK)
   @Post('token/refresh')
   async refreshToken(@Body('refresh_token') refreshToken: string) {
     const tokens = await this.authService.refreshAccessToken(refreshToken);
@@ -69,7 +73,6 @@ export class AuthController {
     };
   }
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
   @Get('me')
   getMe(@Request() req: ExpressRequest) {
     return req.user;

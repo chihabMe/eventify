@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './users.dto';
 import { EmailService } from 'src/email/email.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { isPublic } from 'src/common/decorators/is-public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -17,6 +18,7 @@ export class UsersController {
     private readonly emailService: EmailService,
   ) {}
 
+  @isPublic()
   @Post()
   async create(@Body() data: CreateUserDto) {
     try {
