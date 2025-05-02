@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './auth.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as dayjs from 'dayjs';
+import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 
 @Injectable()
 export class AuthService {
@@ -20,25 +21,31 @@ export class AuthService {
   ) {}
 
   async login(data: LoginDto) {
-    try {
-      const user = await this.validateUser(data.email, data.password);
-      if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      if (!user.isActive || !user.isEmailVerified) {
-        throw new UnauthorizedException('User is not active');
-      }
-      return {
-        access_token: await this.generateAccessToken(user.id, user.role),
-        refresh_token: await this.generateRefreshToken(user.id),
-      };
-    } catch {
-      // log error here if needed
-      throw new InternalServerErrorException(
-        'Failed to login. Please try again.',
-      );
+    const user = await this.validateUser(data.email, data.password);
+    if (!user) {
+      throw new CustomBadRequestException({
+        message: 'Invalid credentials',
+        errors: [
+          { field: 'email', message: 'Invalid email or password' },
+          { field: 'password', message: 'Invalid email or password' },
+        ],
+      });
     }
+
+    if (!user.isActive || !user.isEmailVerified) {
+      throw new CustomBadRequestException({
+        message: 'User is not active or email is not verified',
+        errors: [
+          { field: 'email', message: 'Invalid Email' },
+          { field: 'password', message: 'Invalid Password' },
+        ],
+      });
+    }
+
+    return {
+      access_token: await this.generateAccessToken(user.id, user.role),
+      refresh_token: await this.generateRefreshToken(user.id),
+    };
   }
 
   async refreshAccessToken(refreshToken: string) {

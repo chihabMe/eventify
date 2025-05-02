@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { CreateEventDto } from './event.dto';
+import { CreateEventCategoryDto, CreateEventDto } from './event.dto';
 import slugify from 'slugify';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 
@@ -25,18 +25,37 @@ export class EventsService {
       },
     });
   }
-  async generateSlug(title: string): Promise<string> {
-    const slug = slugify(title, {
+  generateSlug(title: string): string {
+    return slugify(title, {
       lower: true,
       strict: true,
     });
+  }
+  async generateEventSlug(title: string): Promise<string> {
+    const slug = this.generateSlug(title);
     const exists = await this.prismaService.event.findUnique({
       where: {
         slug,
       },
     });
     if (exists) {
-      return this.generateSlug(title + '-' + Math.floor(Math.random() * 1000));
+      return this.generateEventSlug(
+        title + '-' + Math.floor(Math.random() * 1000),
+      );
+    }
+    return slug;
+  }
+  async generateEventCategorySlug(name: string): Promise<string> {
+    const slug = this.generateSlug(name);
+    const exists = await this.prismaService.eventCategory.findUnique({
+      where: {
+        slug,
+      },
+    });
+    if (exists) {
+      return this.generateEventCategorySlug(
+        name + '-' + Math.floor(Math.random() * 1000),
+      );
     }
     return slug;
   }
@@ -49,7 +68,7 @@ export class EventsService {
   }
 
   async createEvent(organizerId: string, data: CreateEventDto) {
-    const slug = await this.generateSlug(data.title);
+    const slug = await this.generateEventSlug(data.title);
     const category = await this.getEventCategoryById(data.categoryId);
     if (!category) {
       throw new CustomBadRequestException({
@@ -64,8 +83,8 @@ export class EventsService {
         ...data,
         organizerId: organizerId,
         categoryId: data.categoryId,
-        startsAt: data.startDate,
-        endsAt: data.endDate,
+        startsAt: data.startsAt,
+        endsAt: data.endsAt,
       },
     });
     if (!event) {
@@ -99,5 +118,25 @@ export class EventsService {
         },
       },
     });
+  }
+  async createEventCategory(data: CreateEventCategoryDto) {
+    try {
+      const slug = await this.generateEventCategorySlug(data.name);
+      const category = await this.prismaService.eventCategory.create({
+        data: {
+          slug,
+          ...data,
+        },
+      });
+      if (!category) {
+        throw new InternalServerErrorException(
+          'Failed to create event category',
+        );
+      }
+      return category;
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException('Failed to create event category');
+    }
   }
 }

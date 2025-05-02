@@ -28,7 +28,7 @@ export class AuthController {
     @Body() data: LoginDto,
   ) {
     const tokens = await this.authService.login(data);
-    res.cookie('access_token', tokens.access_token, {
+    res.cookie('access_token', `Bearer ${tokens.access_token}`, {
       httpOnly: true,
 
       secure: process.env.NODE_ENV === 'production',
@@ -70,7 +70,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokens = await this.authService.refreshAccessToken(refreshToken);
-    res.cookie('access_token', tokens.access_token, {
+    res.cookie('access_token', `Bearer ${tokens.access_token}`, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
