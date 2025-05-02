@@ -24,43 +24,30 @@ export class UsersController {
   @isPublic()
   @Post()
   async create(@Body() data: CreateUserDto) {
-    try {
-      const user = await this.usersService.createUser(data);
-      if (!user) {
-        return {
-          message: 'Failed to create user',
-        };
-      }
-      const token = await this.usersService.generateEmailVerificationToken(
-        user.id,
-      );
-      if (!token) {
-        return {
-          message: 'Failed to create user',
-        };
-      }
-
-      const result = await this.emailService.sendVerificationEmail(
-        user.email,
-        user.id,
-        token.token,
-      );
-      if (result.error) {
-        console.error(result.error);
-        throw new InternalServerErrorException();
-      }
-
-      return {
-        message:
-          'User created successfully please check your email to verify it',
-        user,
-      };
-    } catch (err) {
-      console.error(err);
+    const user = await this.usersService.createUser(data);
+    const token = await this.usersService.generateEmailVerificationToken(
+      user.id,
+    );
+    if (!token) {
       return {
         message: 'Failed to create user',
       };
     }
+
+    const result = await this.emailService.sendVerificationEmail(
+      user.email,
+      user.id,
+      token.token,
+    );
+    if (result.error) {
+      console.error(result.error);
+      throw new InternalServerErrorException();
+    }
+
+    return {
+      message: 'User created successfully please check your email to verify it',
+      user,
+    };
   }
   @Get()
   @isAdmin()

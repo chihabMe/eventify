@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { HashService } from 'src/auth/hash/hash.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
 import { Role } from 'generated/prisma';
+import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 
 @Injectable()
 export class UsersService {
@@ -14,22 +15,32 @@ export class UsersService {
     const { password, userType, ...rest } = data;
     const uniqueEmail = await this.isEmailUnique(rest.email);
     if (!uniqueEmail) {
-      throw new InternalServerErrorException('Email already exists');
+      throw new CustomBadRequestException({
+        message: 'Email already exists',
+        errors: [{ field: 'email', message: 'Email already exists' }],
+      });
     }
-    const hashedPassword = await this.hashService.hashPassword(password);
+    try {
+      const hashedPassword = await this.hashService.hashPassword(password);
 
-    return await this.prisma.user.create({
-      data: {
-        email: rest.email,
-        firstName: rest.firstName,
-        lastName: rest.lastName,
-        password: hashedPassword,
-        role: userType,
-      },
-      omit: {
-        password: true,
-      },
-    });
+      return await this.prisma.user.create({
+        data: {
+          email: rest.email,
+          firstName: rest.firstName,
+          lastName: rest.lastName,
+          password: hashedPassword,
+          role: userType,
+        },
+        omit: {
+          password: true,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException(
+        'Failed to create user. Please try again.',
+      );
+    }
   }
   async findUserByEmail(email: string) {
     const user = await this.prisma.user.findUnique({
