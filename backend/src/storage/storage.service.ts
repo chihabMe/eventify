@@ -22,6 +22,7 @@ export class StorageService {
         resumable: true,
         contentType: file.mimetype,
       });
+
       return new Promise<string>((resolve, reject) => {
         blobStream.on('error', (err) => reject(err));
         blobStream.on('finish', () => {

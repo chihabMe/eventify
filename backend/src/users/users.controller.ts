@@ -2,10 +2,17 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   InternalServerErrorException,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
+  Put,
+  Request,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './users.dto';
@@ -13,12 +20,17 @@ import { EmailService } from 'src/email/email.service';
 import { isPublic } from 'src/common/decorators/is-public.decorator';
 import { isAdmin } from 'src/common/decorators/is-admin.decorator';
 import { Role } from 'generated/prisma';
+import { StorageService } from 'src/storage/storage.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Request as ExpressRequest } from 'express';
+import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
+    private readonly storageService: StorageService,
   ) {}
 
   @isPublic()
@@ -123,5 +135,40 @@ export class UsersController {
       console.error(err);
       return { message: 'Failed to verify email' };
     }
+  }
+
+  @Put('/image')
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProfileImage(
+    @Request() req: ExpressRequest,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({
+            fileType: '.(png|jpeg|jpg)',
+          }),
+        ],
+        errorHttpStatusCode: 422, // Unprocessable Entity
+      }),
+    )
+    image: Express.Multer.File,
+  ) {
+    const userId = req.user!.id;
+    if (!image) {
+      throw new CustomBadRequestException({
+        message: 'Image is required',
+        errors: [{ field: 'image', message: 'Image is required' }],
+      });
+    }
+    const imageUrl = await this.storageService.uploadFile(image);
+    if (!imageUrl) {
+      throw new InternalServerErrorException('Failed to upload image');
+    }
+    await this.usersService.updateProfileImage({
+      userId,
+      imageUrl,
+    });
+    return { message: 'Profile image updated successfully' };
   }
 }

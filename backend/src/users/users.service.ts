@@ -154,4 +154,38 @@ export class UsersService {
     });
     return true;
   }
+
+  async updateProfileImage({
+    userId,
+    imageUrl,
+  }: {
+    userId: string;
+    imageUrl: string;
+  }) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+      if (!user) {
+        throw new Error('User not found with id ${userId}');
+      }
+      // Delete the old image from storage
+      await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          imageUrl,
+        },
+      });
+      return user;
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException(
+        'Failed to update profile image. Please try again.',
+      );
+    }
+  }
 }
