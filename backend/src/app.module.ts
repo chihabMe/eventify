@@ -18,11 +18,9 @@ import { ConfigModule } from '@nestjs/config';
 // import { RolesGuard } from './common/guard/roles.guard';
 import { EventsModule } from './events/events.module';
 import { StorageService } from './storage/storage.service';
-import { BoookingsService } from './boookings/boookings.service';
-import { BoookingsController } from './boookings/boookings.controller';
-import { BoookingsModule } from './boookings/boookings.module';
 import { BookingsController } from './bookings/bookings.controller';
 import { BookingsModule } from './bookings/bookings.module';
+import { BookingsService } from './bookings/bookings.service';
 
 @Module({
   imports: [
@@ -32,10 +30,9 @@ import { BookingsModule } from './bookings/bookings.module';
     UsersModule,
     ControllerModule,
     EventsModule,
-    BoookingsModule,
     BookingsModule,
   ],
-  controllers: [AppController, BoookingsController, BookingsController],
+  controllers: [AppController, BookingsController],
   providers: [
     AppService,
     PrismaService,
@@ -58,7 +55,7 @@ import { BookingsModule } from './bookings/bookings.module';
     },
     EmailService,
     StorageService,
-    BoookingsService,
+    BookingsService,
   ],
 })
 export class AppModule {}

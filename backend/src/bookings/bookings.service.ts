@@ -1,15 +1,18 @@
 // src/bookings/bookings.service.ts
 import { Injectable } from '@nestjs/common';
-import { EventsService } from 'src/events/events.service';
+// import { EventsService } from 'src/events/events.service';
+import * as PDFDocument from 'pdfkit';
 import { PrismaService } from 'src/prisma.service';
 import { CreateBookingDto } from './bookings.dto';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
+import { Booking, User } from 'generated/prisma';
+import { PassThrough } from 'stream';
 
 @Injectable()
 export class BookingsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly eventService: EventsService,
+    // private readonly eventService: EventsService,
   ) {}
 
   async createBooking({
@@ -19,6 +22,21 @@ export class BookingsService {
     userId: string;
     data: CreateBookingDto;
   }) {
+    //if the user booked this event before, throw an error
+    const existingBooking = await this.prisma.booking.findFirst({
+      where: {
+        userId,
+        eventId: data.eventId,
+      },
+    });
+    if (existingBooking) {
+      throw new CustomBadRequestException({
+        message: 'You have already booked this event',
+        errors: [
+          { field: 'eventId', message: 'You have already booked this event' },
+        ],
+      });
+    }
     const event = await this.prisma.event.findFirst({
       where: { id: data.eventId },
       include: {
@@ -46,7 +64,7 @@ export class BookingsService {
       },
     });
 
-    return booking;
+    return { booking, event };
   }
 
   async cancelBooking(userId: string, bookingId: string) {
@@ -78,5 +96,83 @@ export class BookingsService {
         event: true,
       },
     });
+  }
+
+  async getBookingById(bookingId: string) {
+    const ticket = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        event: true,
+      },
+    });
+    if (!ticket) {
+      throw new CustomBadRequestException({
+        message: 'Ticket not found',
+        errors: [{ field: 'bookingId', message: 'Ticket not found' }],
+      });
+    }
+    return ticket;
+  }
+  generateTicketStream({
+    event,
+    user,
+    booking,
+  }: {
+    event: { title: string; startsAt: Date; endsAt: Date; location: string };
+    user: Omit<User, 'password'>;
+    booking: Booking;
+  }): PassThrough {
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const stream = new PassThrough();
+    doc.pipe(stream);
+
+    // === Header ===
+    doc
+      .rect(0, 0, doc.page.width, 80)
+      .fill('#2E86DE')
+      .fillColor('white')
+      .fontSize(28)
+      .text('🎟️ Event Ticket', 50, 25);
+
+    doc.moveDown(2);
+
+    // === Event Info ===
+    doc
+      .fillColor('#333')
+      .fontSize(20)
+      .text('Event Details', { underline: true })
+      .moveDown();
+
+    doc
+      .fontSize(14)
+      .text(`Title: ${event.title}`)
+      .text(
+        `Date: ${event.startsAt.toLocaleString()} - ${event.endsAt.toLocaleString()}`,
+      )
+      .text(`Location: ${event.location}`)
+      .moveDown();
+
+    // === User Info ===
+    doc.fontSize(20).text('Attendee', { underline: true }).moveDown(0.5);
+
+    doc
+      .fontSize(14)
+      .text(`Name: ${user.firstName} ${user.lastName}`)
+      .text(`Email: ${user.email}`)
+      .text(`Booking ID: ${booking.id}`)
+      .moveDown();
+
+    // === Footer / QR Placeholder ===
+    doc
+      .moveDown(2)
+      .fontSize(12)
+      .fillColor('#555')
+      .text('Please bring this ticket to the event.', { align: 'center' });
+
+    // Optional: Add a QR code image or barcode here
+    // doc.image('path/to/qr.png', { fit: [100, 100], align: 'center' });
+
+    doc.end();
+    return stream;
   }
 }

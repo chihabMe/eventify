@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Event, User } from 'generated/prisma';
+import { Booking, Event, User } from 'generated/prisma';
 import { Resend } from 'resend';
 
 @Injectable()
@@ -163,5 +163,102 @@ export class EmailService {
   </html>
 `,
     });
+  }
+  async sendBookingConfirmationEmail({
+    user,
+    event,
+    booking,
+  }: {
+    user: Omit<User, 'password'>;
+    event: Event;
+    booking: Booking;
+  }) {
+    try {
+      const ticketDownloadUrl = `${process.env.CLIENT_URL}/bookings/ticket/${booking.id}`;
+
+      return await this.resend.emails.send({
+        from: process.env.FROM_EMAIL ?? 'eventify@eventify.chihab.tech.com',
+        to: [user.email],
+        subject: `🎫 Your Ticket for ${event.title}`,
+        html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+          }
+          .container {
+            background-color: #fff;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+            color: #333;
+          }
+          .ticket {
+            border: 2px dashed #6366f1;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #f0f0ff;
+          }
+          .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #6366f1;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+          }
+          .footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 30px;
+            color: #888;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Booking Confirmed 🎉</h1>
+          <p>Hi ${user.firstName},</p>
+          <p>You've successfully booked a ticket for <strong>${event.title}</strong>.</p>
+
+          <div class="ticket">
+            <h2>🎫 Your Event Ticket</h2>
+            <p><strong>Event:</strong> ${event.title}</p>
+            <p><strong>Date:</strong> ${new Date(event.startsAt).toLocaleString()} - ${new Date(event.endsAt).toLocaleString()}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
+            <p><strong>Booked By:</strong> ${user.firstName} ${user.lastName} (${user.email})</p>
+            <a href="${ticketDownloadUrl}" class="button" target="_blank">Download Ticket (PDF)</a>
+          </div>
+
+          <p>Show this ticket at the event entrance. Enjoy!</p>
+
+          <div class="footer">
+            &copy; ${new Date().getFullYear()} Chihab Tech. All rights reserved.
+          </div>
+        </div>
+      </body>
+      </html>
+      `,
+      });
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException(
+        "Can't send booking confirmation email",
+      );
+    }
   }
 }
