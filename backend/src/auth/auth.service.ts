@@ -67,7 +67,8 @@ export class AuthService {
   async generateAccessToken(userId: string, role: string) {
     try {
       return await this.jwtService.signAsync({ sub: userId, role });
-    } catch {
+    } catch (err) {
+      console.error('Error generating access token:', err);
       throw new InternalServerErrorException('Failed to generate access token');
     }
   }
@@ -85,7 +86,8 @@ export class AuthService {
       }
 
       return payload;
-    } catch {
+    } catch (err) {
+      console.error('Error verifying token:', err);
       return null;
     }
   }
