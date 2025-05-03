@@ -15,7 +15,9 @@ import { BookingsService } from './bookings.service';
 import { Request, Response } from 'express';
 import { CreateBookingDto } from './bookings.dto';
 import { EmailService } from 'src/email/email.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Bookings')
 @Controller('bookings')
 export class BookingsController {
   constructor(
@@ -24,6 +26,14 @@ export class BookingsController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: 'Create a booking',
+    description: 'Create a booking for an event',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Booking created successfully',
+  })
   async createBooking(@Req() req: Request, @Body() data: CreateBookingDto) {
     const userId = req.user!.id;
     try {
@@ -46,6 +56,14 @@ export class BookingsController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Cancel a booking',
+    description: 'Cancel a booking for an event',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Booking canceled successfully',
+  })
   async cancelBooking(@Req() req: Request, @Param('id') bookingId: string) {
     const userId = req.user!.id;
     try {
@@ -68,7 +86,17 @@ export class BookingsController {
     }
   }
 
-  @Get('my-bookings')
+  @Get('event/:id')
+  async getEventBookings(@Param('id') eventId: string) {
+    const bookings = await this.bookingsService.getEventBookings(eventId);
+    if (!bookings) {
+      throw new NotFoundException('Event not found');
+    }
+    return bookings;
+  }
+
+  //this controller returns the bookings for the user
+  @Get('user')
   async getMyBookings(@Req() req: Request) {
     const userId = req.user!.id;
     return this.bookingsService.getUserBookings(userId);

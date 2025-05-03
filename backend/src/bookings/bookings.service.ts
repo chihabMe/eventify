@@ -97,6 +97,25 @@ export class BookingsService {
       },
     });
   }
+  async getEventBookings(eventId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        bookings: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    if (!event) {
+      throw new CustomBadRequestException({
+        message: 'Event not found',
+        errors: [{ field: 'eventId', message: 'Event not found' }],
+      });
+    }
+    return event.bookings;
+  }
 
   async getBookingById(bookingId: string) {
     const ticket = await this.prisma.booking.findUnique({
