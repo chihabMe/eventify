@@ -1,5 +1,5 @@
 export const jwtConstants = {
-  secret: process.env.SECRET ?? 'no-secret',
+  secret: process.env.SECRET_KEY ?? 'no-secret',
   accessTokenLifetime: {
     asNumber: 5 * 60 * 1000,
     asString: '5m',
