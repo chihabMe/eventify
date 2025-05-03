@@ -17,6 +17,7 @@ import { HashService } from './auth/hash/hash.service';
 import { ConfigModule } from '@nestjs/config';
 // import { RolesGuard } from './common/guard/roles.guard';
 import { EventsModule } from './events/events.module';
+import { StorageService } from './storage/storage.service';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { EventsModule } from './events/events.module';
       useClass: CustomZodValidationPipe,
     },
     EmailService,
+    StorageService,
   ],
 })
 export class AppModule {}

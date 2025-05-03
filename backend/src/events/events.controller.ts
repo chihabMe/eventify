@@ -7,6 +7,8 @@ import {
   Post,
   Put,
   Request,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   CreateEventCategoryDto,
@@ -19,19 +21,42 @@ import { EmailService } from 'src/email/email.service';
 import { isAdmin } from 'src/common/decorators/is-admin.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'generated/prisma';
+import { StorageService } from 'src/storage/storage.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+export const multerOptions = {
+  storage: diskStorage({
+    destination: './uploads',
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const name = `${uuid()}${ext}`;
+      cb(null, name);
+    },
+  }),
+};
 
 @Controller('events')
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
     private readonly emailService: EmailService,
+    private readonly StorageService: StorageService,
   ) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   @Roles(Role.ORGANIZER, Role.ADMIN)
-  async create(@Body() data: CreateEventDto, @Request() req: ExpressRequest) {
+  async create(
+    @Body() data: CreateEventDto,
+    @Request() req: ExpressRequest,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
     const organizerId = req.user!.id;
-    const event = await this.eventsService.createEvent(organizerId, data);
+    const imageUrl = await this.StorageService.uploadFile(image);
+    const event = await this.eventsService.createEvent(organizerId, {
+      ...data,
+      imageUrl,
+    });
     await this.emailService.sendEventCreatingEmail({
       event,
       user: req.user!,

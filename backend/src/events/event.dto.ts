@@ -27,6 +27,7 @@ export const CreateEventSchema = z
     capacity: z.number().min(1, { message: 'Capacity must be at least 1' }),
     tags: z.array(z.string()).optional(),
     categoryId: z.string(),
+    imageUrl: z.string(),
   })
   .superRefine((data, ctx) => {
     const startDate = new Date(data.startsAt);
