@@ -2,8 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Request,
@@ -24,17 +27,6 @@ import { Role } from 'generated/prisma';
 import { StorageService } from 'src/storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-export const multerOptions = {
-  storage: diskStorage({
-    destination: './uploads',
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      const name = `${uuid()}${ext}`;
-      cb(null, name);
-    },
-  }),
-};
-
 @Controller('events')
 export class EventsController {
   constructor(
@@ -44,18 +36,30 @@ export class EventsController {
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @UseInterceptors(FileInterceptor('image'))
   @Roles(Role.ORGANIZER, Role.ADMIN)
   async create(
     @Body() data: CreateEventDto,
     @Request() req: ExpressRequest,
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({
+            fileType: '.(png|jpeg|jpg)',
+          }),
+        ],
+        errorHttpStatusCode: 422, // Unprocessable Entity
+      }),
+    )
+    image: Express.Multer.File,
   ) {
     const organizerId = req.user!.id;
     const imageUrl = await this.StorageService.uploadFile(image);
-    const event = await this.eventsService.createEvent(organizerId, {
-      ...data,
+    const event = await this.eventsService.createEvent({
+      data,
       imageUrl,
+      organizerId,
     });
     await this.emailService.sendEventCreatingEmail({
       event,

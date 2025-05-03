@@ -56,3 +56,5 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+## google storage keys
+woven-voice-295714-80aa7005b9ec.json

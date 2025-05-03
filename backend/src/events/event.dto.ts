@@ -23,11 +23,24 @@ export const CreateEventSchema = z
       .refine((val) => !isNaN(Date.parse(val)), {
         message: 'End date must be a valid date',
       }),
-
-    capacity: z.number().min(1, { message: 'Capacity must be at least 1' }),
-    tags: z.array(z.string()).optional(),
+    capacity: z
+      .union([z.string(), z.number()])
+      .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
+      .refine((val) => !isNaN(val) && val >= 1, {
+        message: 'Capacity must be at least 1',
+      }),
+    tags: z
+      .union([
+        z
+          .string()
+          .transform((val) =>
+            val ? val.split(',').map((tag) => tag.trim()) : [],
+          ),
+        z.array(z.string()),
+      ])
+      .optional(),
     categoryId: z.string(),
-    imageUrl: z.string(),
+    // imageUrl: z.string(),
   })
   .superRefine((data, ctx) => {
     const startDate = new Date(data.startsAt);
@@ -53,7 +66,7 @@ export const UpdateEventSchema = z.object({
       message: 'Start date must be a valid date',
     })
     .optional(),
-  ends: z
+  endsAt: z // Fixed typo from 'ends' to 'endsAt' to match CreateEventSchema
     .string({
       required_error: 'End date is required',
     })
@@ -61,14 +74,30 @@ export const UpdateEventSchema = z.object({
       message: 'End date must be a valid date',
     })
     .optional(),
-  capacity: z.number().optional(),
-  tags: z.array(z.string()).optional(),
+  capacity: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
+    .refine((val) => !isNaN(val) && val >= 1, {
+      message: 'Capacity must be at least 1',
+    })
+    .optional(),
+  tags: z
+    .union([
+      z
+        .string()
+        .transform((val) =>
+          val ? val.split(',').map((tag) => tag.trim()) : [],
+        ),
+      z.array(z.string()),
+    ])
+    .optional(),
   categoryId: z.string().optional(),
 });
 
 const CreateEventCategorySchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
 });
+
 const UpdateEventCategorySchema = z.object({
   name: z.string().optional(),
 });
@@ -78,7 +107,6 @@ export class UpdateEventDto extends createZodDto(UpdateEventSchema) {}
 export class CreateEventCategoryDto extends createZodDto(
   CreateEventCategorySchema,
 ) {}
-
 export class UpdateEventCategoryDto extends createZodDto(
   UpdateEventCategorySchema,
 ) {}

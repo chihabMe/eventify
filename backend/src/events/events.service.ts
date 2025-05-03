@@ -88,7 +88,15 @@ export class EventsService {
     });
   }
 
-  async createEvent(organizerId: string, data: CreateEventDto) {
+  async createEvent({
+    organizerId,
+    imageUrl,
+    data,
+  }: {
+    organizerId: string;
+    data: CreateEventDto;
+    imageUrl: string;
+  }) {
     const slug = await this.generateEventSlug(data.title);
     const category = await this.getEventCategoryById(data.categoryId);
     if (!category) {
@@ -103,6 +111,7 @@ export class EventsService {
         slug,
         ...data,
         organizerId: organizerId,
+        imageUrl,
         categoryId: data.categoryId,
         startsAt: new Date(data.startsAt),
         endsAt: new Date(data.endsAt),

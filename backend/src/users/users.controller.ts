@@ -24,7 +24,10 @@ export class UsersController {
   @isPublic()
   @Post()
   async create(@Body() data: CreateUserDto) {
-    const user = await this.usersService.createUser(data);
+    const user = await this.usersService.createUser({
+      data,
+      imageUrl: '',
+    });
     const token = await this.usersService.generateEmailVerificationToken(
       user.id,
     );

@@ -16,5 +16,5 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
     env_file:
       - .env
-    volumes:
-      - ./backend:/app
+    # volumes:
+    #   - ./backend:/app

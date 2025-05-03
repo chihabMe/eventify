@@ -11,7 +11,13 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly hashService: HashService,
   ) {}
-  async createUser(data: CreateUserDto) {
+  async createUser({
+    data,
+    imageUrl,
+  }: {
+    data: CreateUserDto;
+    imageUrl: string;
+  }) {
     const { password, userType, ...rest } = data;
     const uniqueEmail = await this.isEmailUnique(rest.email);
     if (!uniqueEmail) {
@@ -27,6 +33,7 @@ export class UsersService {
         data: {
           email: rest.email,
           firstName: rest.firstName,
+          imageUrl,
           lastName: rest.lastName,
           password: hashedPassword,
           role: userType,

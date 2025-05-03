@@ -60,7 +60,7 @@ model User {
   role               Role                     @default(USER)
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @default(now()) @updatedAt
-  imageUrl           String
+  imageUrl           String?                  @default("")
   bookings           Booking[]
   reviews            Review[]
   eventsOrganized    Event[]                  @relation("Organizer")
@@ -78,7 +78,7 @@ model Event {
   startsAt    DateTime
   endsAt      DateTime
 
-  imageUrl   String
+  imageUrl   String?       @default("")
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @default(now()) @updatedAt
   category   EventCategory @relation(fields: [categoryId], references: [id], name: "Category")
@@ -108,9 +108,9 @@ model Booking {
   user   User   @relation(fields: [userId], references: [id])
   userId String @db.ObjectId
 
-  event     Event  @relation(fields: [eventId], references: [id])
-  eventId   String @db.ObjectId
-  ticketUrl String
+  event     Event   @relation(fields: [eventId], references: [id])
+  eventId   String  @db.ObjectId
+  ticketUrl String? @default("")
 
   createdAt DateTime @default(now())
 }
