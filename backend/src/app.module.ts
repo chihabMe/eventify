@@ -21,6 +21,7 @@ import { StorageService } from './storage/storage.service';
 import { BookingsController } from './bookings/bookings.controller';
 import { BookingsModule } from './bookings/bookings.module';
 import { BookingsService } from './bookings/bookings.service';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { BookingsService } from './bookings/bookings.service';
     ControllerModule,
     EventsModule,
     BookingsModule,
+    ReviewsModule,
   ],
   controllers: [AppController, BookingsController],
   providers: [

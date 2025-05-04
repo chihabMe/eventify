@@ -26,7 +26,9 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'generated/prisma';
 import { StorageService } from 'src/storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('events')
 @Controller('events')
 export class EventsController {
   constructor(
@@ -36,6 +38,15 @@ export class EventsController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: 'Create a new event',
+    description: 'Create a new event and send confirmation email',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Event created successfully',
+    type: CreateEventDto,
+  })
   @UseInterceptors(FileInterceptor('image'))
   @Roles(Role.ORGANIZER, Role.ADMIN)
   async create(
@@ -72,10 +83,37 @@ export class EventsController {
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'Get all events',
+    description: 'Get a list of all events',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of events',
+    type: [CreateEventDto],
+  })
+  @ApiOperation({
+    summary: 'Get all events',
+    description: 'Get a list of all events',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of events',
+    type: [CreateEventDto],
+  })
   getAllEvents() {
     return this.eventsService.getAllEvents();
   }
 
+  @ApiOperation({
+    summary: 'Get event details by ID',
+    description: 'Get details of a specific event by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event details fetched successfully',
+    type: CreateEventDto,
+  })
   @Get(':slug')
   async getEventBySlug(@Param('slug') slug: string) {
     const event = await this.eventsService.getEventDetailsWithSlug(slug);
@@ -85,6 +123,14 @@ export class EventsController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete an event',
+    description: 'Delete an event by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event deleted successfully',
+  })
   @Roles(Role.ORGANIZER, Role.ADMIN)
   async deleteEvent(@Param('id') id: string, @Request() req: ExpressRequest) {
     //checking if the user id is the same as the one stored in the event
@@ -94,6 +140,15 @@ export class EventsController {
     };
   }
 
+  @ApiOperation({
+    summary: 'Update an event',
+    description: 'Update an existing event by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event updated successfully',
+    type: CreateEventDto,
+  })
   @Get('/categories')
   async getAllCategories() {
     const categories = await this.eventsService.getAllEventCategories();
@@ -102,6 +157,15 @@ export class EventsController {
     };
   }
 
+  @ApiOperation({
+    summary: 'Create a new event category',
+    description: 'Create a new event category',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Event category created successfully',
+    type: CreateEventCategoryDto,
+  })
   @Post('/categories')
   @isAdmin()
   async createCategory(@Body() data: CreateEventCategoryDto) {
@@ -113,6 +177,15 @@ export class EventsController {
   }
 
   @isAdmin()
+  @ApiOperation({
+    summary: 'Get event category by ID',
+    description: 'Get details of a specific event category by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event category details fetched successfully',
+    type: CreateEventCategoryDto,
+  })
   @Get('/categories/:id')
   async getCategory(@Param('id') id: string) {
     const category = await this.eventsService.getEventCategoryById(id);
@@ -121,6 +194,15 @@ export class EventsController {
     };
   }
   @isAdmin()
+  @ApiOperation({
+    summary: 'Delete an event category',
+    description: 'Delete an event category by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event category deleted successfully',
+    type: CreateEventCategoryDto,
+  })
   @Delete('/categories/:id')
   async deleteCategory(@Param('id') id: string) {
     const category = await this.eventsService.deleteEventCategory(id);
@@ -130,6 +212,15 @@ export class EventsController {
     };
   }
   @isAdmin()
+  @ApiOperation({
+    summary: 'Update an event category',
+    description: 'Update an existing event category by its ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event category updated successfully',
+    type: CreateEventCategoryDto,
+  })
   @Put('/categories/:id')
   async updateCategory(
     @Param('id') id: string,

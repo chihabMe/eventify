@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { Request, Response } from 'express';
-import { CreateBookingDto } from './bookings.dto';
 import { EmailService } from 'src/email/email.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -25,7 +24,7 @@ export class BookingsController {
     private readonly emailService: EmailService,
   ) {}
 
-  @Post()
+  @Post(':eventId')
   @ApiOperation({
     summary: 'Create a booking',
     description: 'Create a booking for an event',
@@ -34,12 +33,12 @@ export class BookingsController {
     status: 201,
     description: 'Booking created successfully',
   })
-  async createBooking(@Req() req: Request, @Body() data: CreateBookingDto) {
+  async createBooking(@Req() req: Request, @Param('eventId') eventId: string) {
     const userId = req.user!.id;
     try {
       const { booking, event } = await this.bookingsService.createBooking({
         userId,
-        data,
+        eventId,
       });
       await this.emailService.sendBookingConfirmationEmail({
         user: req.user!,
@@ -86,6 +85,14 @@ export class BookingsController {
     }
   }
 
+  @ApiOperation({
+    summary: 'Get bookings for an event',
+    description: 'Get all bookings for a specific event',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of bookings for the event',
+  })
   @Get('event/:id')
   async getEventBookings(@Param('id') eventId: string) {
     const bookings = await this.bookingsService.getEventBookings(eventId);
@@ -96,13 +103,29 @@ export class BookingsController {
   }
 
   //this controller returns the bookings for the user
+  @ApiOperation({
+    summary: 'Get logged in user  bookings',
+    description: 'Get all bookings for the logged-in user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of bookings for the user',
+  })
   @Get('user')
   async getMyBookings(@Req() req: Request) {
     const userId = req.user!.id;
     return this.bookingsService.getUserBookings(userId);
   }
 
-  @Get('ticket/:id')
+  @ApiOperation({
+    summary: 'Download ticket',
+    description: 'Download the ticket for a booking',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ticket downloaded successfully',
+  })
+  @Get(':id/ticket')
   async downloadTicket(
     @Param('id') bookingId: string,
     @Req() req: Request,

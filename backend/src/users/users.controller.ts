@@ -19,12 +19,14 @@ import { CreateUserDto } from './users.dto';
 import { EmailService } from 'src/email/email.service';
 import { isPublic } from 'src/common/decorators/is-public.decorator';
 import { isAdmin } from 'src/common/decorators/is-admin.decorator';
-import { Role } from 'generated/prisma';
+// import { Role } from 'generated/prisma';
 import { StorageService } from 'src/storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request as ExpressRequest } from 'express';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -35,6 +37,15 @@ export class UsersController {
 
   @isPublic()
   @Post()
+  @ApiOperation({
+    summary: 'Create a new user',
+    description: 'Create a new user and send verification email',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User created successfully',
+    type: CreateUserDto,
+  })
   async create(@Body() data: CreateUserDto) {
     const user = await this.usersService.createUser({
       data,
@@ -66,6 +77,15 @@ export class UsersController {
   }
   @Get()
   @isAdmin()
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'Get all users in the system',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of users',
+    type: [CreateUserDto],
+  })
   async findAll() {
     try {
       const users = await this.usersService.findAllUsers();
@@ -80,6 +100,15 @@ export class UsersController {
 
   @isAdmin()
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get user by ID',
+    description: 'Get user details by user ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User details',
+    type: CreateUserDto,
+  })
   async findOne(@Param('id') id: string) {
     try {
       const user = await this.usersService.findUserById(id);
@@ -93,6 +122,14 @@ export class UsersController {
   // Delete user - Admin only
   @Delete(':id')
   @isAdmin()
+  @ApiOperation({
+    summary: 'Delete a user',
+    description: 'Delete a user by user ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User deleted successfully',
+  })
   async remove(@Param('id') id: string) {
     try {
       await this.usersService.deleteUser(id);
@@ -104,23 +141,31 @@ export class UsersController {
   }
 
   // Get all organizers - Admin only
-  @Get('/organizers')
-  @isAdmin()
-  async findAllOrganizers() {
-    try {
-      const organizers = await this.usersService.findUsersByRole(
-        Role.ORGANIZER,
-      );
-      return organizers;
-    } catch (err) {
-      console.error(err);
-      return { message: 'Failed to fetch organizers' };
-    }
-  }
+  // @Get('/organizers')
+  // @isAdmin()
+  // async findAllOrganizers() {
+  //   try {
+  //     const organizers = await this.usersService.findUsersByRole(
+  //       Role.ORGANIZER,
+  //     );
+  //     return organizers;
+  //   } catch (err) {
+  //     console.error(err);
+  //     return { message: 'Failed to fetch organizers' };
+  //   }
+  // }
 
   // Verify email route
   @isPublic()
   @Get('verify/:userId/:token')
+  @ApiOperation({
+    summary: 'Verify email',
+    description: 'Verify user email using the verification token',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+  })
   async verifyEmail(
     @Param('userId') userId: string,
     @Param('token') token: string,
@@ -137,7 +182,15 @@ export class UsersController {
     }
   }
 
-  @Put('/image')
+  @Put('/upload-image')
+  @ApiOperation({
+    summary: 'Update user profile image',
+    description: 'Update user profile image',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile image updated successfully',
+  })
   @UseInterceptors(FileInterceptor('image'))
   async updateProfileImage(
     @Request() req: ExpressRequest,

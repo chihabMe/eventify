@@ -6,6 +6,7 @@ import * as cookieParser from 'cookie-parser';
 import { ConsoleLogger } from '@nestjs/common';
 import { CustomBadRequestExceptionFilter } from './common/filters/custom-badrequest.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { patchNestJsSwagger } from 'nestjs-zod';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -27,6 +28,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ZodValidationPipe());
   app.useGlobalFilters(new CustomBadRequestExceptionFilter());
 
+  patchNestJsSwagger();
   const config = new DocumentBuilder()
     .setTitle('Eventify a smart event booking system')
     .setDescription('Eventify API description')

@@ -124,7 +124,7 @@ model Review {
   eventId String @db.ObjectId
 
   rating  Int
-  comment String?
+  comment String
 
   createdAt DateTime @default(now())
 }

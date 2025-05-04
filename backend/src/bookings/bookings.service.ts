@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 // import { EventsService } from 'src/events/events.service';
 import * as PDFDocument from 'pdfkit';
 import { PrismaService } from 'src/prisma.service';
-import { CreateBookingDto } from './bookings.dto';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 import { Booking, User } from 'generated/prisma';
 import { PassThrough } from 'stream';
@@ -17,16 +16,16 @@ export class BookingsService {
 
   async createBooking({
     userId,
-    data,
+    eventId,
   }: {
     userId: string;
-    data: CreateBookingDto;
+    eventId: string;
   }) {
     //if the user booked this event before, throw an error
     const existingBooking = await this.prisma.booking.findFirst({
       where: {
         userId,
-        eventId: data.eventId,
+        eventId: eventId,
       },
     });
     if (existingBooking) {
@@ -38,7 +37,7 @@ export class BookingsService {
       });
     }
     const event = await this.prisma.event.findFirst({
-      where: { id: data.eventId },
+      where: { id: eventId },
       include: {
         bookings: true,
       },
@@ -59,7 +58,7 @@ export class BookingsService {
 
     const booking = await this.prisma.booking.create({
       data: {
-        eventId: data.eventId,
+        eventId,
         userId: userId,
       },
     });
