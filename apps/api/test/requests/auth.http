@@ -1,0 +1,27 @@
+# getting jwt tokens 
+POST http://localhost:8000/auth/login
+Content-Type: application/json
+
+{
+    "email":"chihabkol1234@gmail.com",
+    "password":"password"
+}
+
+### Get all events
+POST http://localhost:8000/auth/token/refresh
+Content-Type: application/json
+
+{
+    "refresh_token":"eyJhGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODEzOWNlZjczOWVkZWRiYjlhZjY0ZWYiLCJpYXQiOjE3NDYxMTkwNDIsImV4cCI6MTc0ODcxMTA0Mn0.DzBWaBHutaPGYTq5T4PAcjIxEwmUChW7XPXXvWfYW98"
+}
+
+### Get Current User
+
+GET http://localhost:8000/auth/me/
+Content-Type: application/json
+
+
+
+
+
+

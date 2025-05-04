@@ -1,0 +1,28 @@
+
+{
+  "name": "api",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm start:dev",
+        "cwd": "apps/api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm build",
+        "cwd": "apps/api"
+      }
+    },
+
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm start",
+        "cwd": "apps/api"
+      }
+    }
+  }
+}
