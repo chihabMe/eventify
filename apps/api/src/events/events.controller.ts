@@ -23,6 +23,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
+import { isOrganizer } from 'src/common/decorators/is-organizer.decorator';
 
 @ApiTags('events')
 @Controller('events')
@@ -124,6 +125,26 @@ export class EventsController {
         page: p,
         results: events.length,
       },
+      data: events,
+    };
+  }
+
+  @ApiOperation({
+    summary: 'Get current logged in organizer events',
+    description:
+      'This route will return the created events for the current logged in organizer',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event list  fetched successfully',
+    type: CreateEventDto,
+  })
+  @Get('me')
+  @isOrganizer()
+  async getCurrentLoggedOrganizerEvents(@Request() req: ExpressRequest) {
+    const userId = req.user!.id;
+    const events = await this.eventsService.getCurrentOrganizer(userId);
+    return {
       data: events,
     };
   }

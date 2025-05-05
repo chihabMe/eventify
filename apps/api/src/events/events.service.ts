@@ -186,4 +186,12 @@ export class EventsService {
       },
     });
   }
+
+  async getCurrentOrganizer(organizerId: string) {
+    return this.prismaService.event.findMany({
+      where: {
+        organizerId,
+      },
+    });
+  }
 }
