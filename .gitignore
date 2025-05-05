@@ -3,3 +3,4 @@ vitest.config.*.timestamp*
 volumes
 node_modules
 .nx
+.env
