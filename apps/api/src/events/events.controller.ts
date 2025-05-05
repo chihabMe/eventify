@@ -112,8 +112,15 @@ export class EventsController {
     type: CreateEventDto,
   })
   @Get(':slug')
-  async getEventBySlug(@Param('slug') slug: string) {
-    const event = await this.eventsService.getEventDetailsWithSlug(slug);
+  async getEventBySlug(
+    @Param('slug') slug: string,
+    @Request() req: ExpressRequest,
+  ) {
+    const userId = req.user!.id;
+    const event = await this.eventsService.getEventDetailsWithSlug(
+      slug,
+      userId,
+    );
     return {
       data: event,
     };

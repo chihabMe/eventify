@@ -9,6 +9,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Res,
+  HttpCode,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { Request, Response } from 'express';
@@ -54,6 +55,7 @@ export class BookingsController {
   }
 
   @Delete(':id')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Cancel a booking',
     description: 'Cancel a booking for an event',
@@ -62,13 +64,10 @@ export class BookingsController {
     status: 200,
     description: 'Booking canceled successfully',
   })
-  async cancelBooking(@Req() req: Request, @Param('id') bookingId: string) {
+  async cancelBooking(@Req() req: Request, @Param('id') eventId: string) {
     const userId = req.user!.id;
     try {
-      const booking = await this.bookingsService.cancelBooking(
-        userId,
-        bookingId,
-      );
+      const booking = await this.bookingsService.cancelBooking(userId, eventId);
       return {
         message: 'Booking canceled successfully',
         booking,

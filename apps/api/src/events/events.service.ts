@@ -17,8 +17,8 @@ export class EventsService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
-  async getEventDetailsWithSlug(slug: string) {
-    return this.prismaService.event.findUnique({
+  async getEventDetailsWithSlug(slug: string, userId) {
+    const event = await this.prismaService.event.findUnique({
       where: {
         slug,
       },
@@ -28,6 +28,7 @@ export class EventsService {
             id: true,
             firstName: true,
             lastName: true,
+            imageUrl: true,
           },
         },
         category: {
@@ -45,6 +46,21 @@ export class EventsService {
         },
       },
     });
+    if (!event) {
+      throw new CustomBadRequestException({
+        message: 'Event not found',
+        errors: [{ field: 'slug', message: 'Event not found' }],
+      });
+    }
+    const existingBookingForTheUser =
+      await this.prismaService.booking.findFirst({
+        where: {
+          eventId: event.id,
+          userId,
+        },
+      });
+    const booked = existingBookingForTheUser !== null;
+    return { ...event, booked };
   }
   generateSlug(title: string): string {
     return slugify(title, {

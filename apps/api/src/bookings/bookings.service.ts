@@ -66,26 +66,26 @@ export class BookingsService {
     return { booking, event };
   }
 
-  async cancelBooking(userId: string, bookingId: string) {
-    const booking = await this.prisma.booking.findUnique({
-      where: { id: bookingId },
+  async cancelBooking(userId: string, eventId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
     });
 
-    if (!booking || booking.userId !== userId) {
+    if (!event) {
       throw new CustomBadRequestException({
         message:
-          'Booking not found or you are not authorized to cancel this booking',
+          'event not found or you are not authorized to cancel this booking',
         errors: [
           {
-            field: 'bookingId',
+            field: 'eventId',
             message:
-              'Booking not found or you are not authorized to cancel this booking',
+              'event not found or you are not authorized to cancel this booking',
           },
         ],
       });
     }
 
-    return this.prisma.booking.delete({ where: { id: bookingId } });
+    return this.prisma.booking.deleteMany({ where: { eventId, userId } });
   }
 
   async getUserBookings(userId: string) {

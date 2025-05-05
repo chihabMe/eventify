@@ -3,10 +3,10 @@ version: "3.8"
 services:
   backend:
     build:
-      context: ./backend
-    container_name: eventify-backend
+      context: ./apps/api
+    container_name: eventify-api
     ports:
-      - "8888:8000"
+      - "8000:8000"
     environment:
       - PORT=${PORT}
       - DATABASE_URL=${DATABASE_URL}
@@ -16,5 +16,22 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
     env_file:
       - .env
+  client:
+    build:
+      context: ./apps/client
+    container_name: eventify-client
+    env_file:
+    - .env
+    volumes:
+    - "./volumes/client/build:/app/dist"
+  nginx:
+    image: nginx:stable-alpine
+    container_name: eventify-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - "./volumes/client/build:/usr/share/nginx/html:ro"
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+
     # volumes:
     #   - ./backend:/app

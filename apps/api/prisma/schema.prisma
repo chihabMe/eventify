@@ -113,6 +113,8 @@ model Booking {
   ticketUrl String? @default("")
 
   createdAt DateTime @default(now())
+
+  @@index([userId, eventId], name: "user_event_index")
 }
 
 model Review {
