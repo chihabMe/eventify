@@ -90,7 +90,6 @@ export class AuthService {
 
       return payload;
     } catch (err) {
-      console.error('Error verifying token:', err);
       return null;
     }
   }
