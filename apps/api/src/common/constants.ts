@@ -9,3 +9,5 @@ export const jwtConstants = {
     asString: '7d',
   },
 };
+
+export const PAGE_SIZE = 10;

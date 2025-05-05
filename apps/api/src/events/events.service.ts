@@ -9,6 +9,7 @@ import slugify from 'slugify';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 import { Role, User } from 'generated/prisma';
 import { CategoriesService } from 'src/categories/categories.service';
+import { PAGE_SIZE } from 'src/common/constants';
 
 @Injectable()
 export class EventsService {
@@ -145,8 +146,28 @@ export class EventsService {
       where: { id },
     });
   }
-  async getAllEvents() {
+  async getAllEvents({
+    filters,
+  }: {
+    filters: {
+      featured?: boolean;
+      page: number;
+      category?: string;
+    };
+  }) {
+    const { page, category, featured } = filters;
+    const skip = (page - 1) * PAGE_SIZE;
     return this.prismaService.event.findMany({
+      skip,
+      take: PAGE_SIZE,
+      where: {
+        isFeatured: featured,
+        category: category
+          ? {
+              slug: category,
+            }
+          : undefined,
+      },
       include: {
         organizer: {
           select: {

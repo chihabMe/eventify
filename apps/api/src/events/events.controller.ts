@@ -8,6 +8,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Query,
   Request,
   UploadedFile,
   UseInterceptors,
@@ -21,6 +22,7 @@ import { Role } from 'generated/prisma';
 import { StorageService } from 'src/storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 
 @ApiTags('events')
 @Controller('events')
@@ -95,9 +97,33 @@ export class EventsController {
     description: 'List of events',
     type: [CreateEventDto],
   })
-  async getAllEvents() {
-    const events = await this.eventsService.getAllEvents();
+  async getAllEvents(
+    @Query('featured') featured: string,
+    @Query('page') page: string,
+    @Query('category') category: string,
+  ) {
+    let p = 1;
+    try {
+      p = parseInt(page) || 1;
+    } catch (err) {
+      console.error(err);
+      throw new CustomBadRequestException({
+        message: 'Invalid page',
+        errors: [],
+      });
+    }
+    const events = await this.eventsService.getAllEvents({
+      filters: {
+        featured: featured === 'true' ? true : undefined,
+        category,
+        page: p,
+      },
+    });
     return {
+      pagination: {
+        page: p,
+        results: events.length,
+      },
       data: events,
     };
   }

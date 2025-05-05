@@ -77,6 +77,7 @@ model Event {
   capacity    Int
   startsAt    DateTime
   endsAt      DateTime
+  isFeatured Boolean @default(false)
 
   imageUrl   String?       @default("")
   createdAt  DateTime      @default(now())
