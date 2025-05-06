@@ -55,7 +55,7 @@ export class EventsController {
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
           new FileTypeValidator({
-            fileType: '.(png|jpeg|jpg,webp)',
+            fileType: '.(png|jpeg|jpg|webp)',
           }),
         ],
         errorHttpStatusCode: 422, // Unprocessable Entity

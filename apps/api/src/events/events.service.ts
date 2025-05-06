@@ -108,10 +108,12 @@ export class EventsService {
       });
     }
 
+    const uniqueTags = [...new Set(data.tags)];
     const event = await this.prismaService.event.create({
       data: {
         slug,
         ...data,
+        tags: uniqueTags,
         organizerId: organizerId,
         imageUrl,
         categoryId: data.categoryId,
