@@ -1,9 +1,10 @@
 # FROM node:20-alpine
 #FROM node:lts-alpine3.17
-FROM node:slim
+#FROM node:slim
+FROM node:20-alpine 
 
-RUN apt-get update -y \
-&& apt-get install -y openssl
+# RUN apt-get update -y \
+# && apt-get install -y openssl
 
 
 

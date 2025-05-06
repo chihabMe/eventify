@@ -166,7 +166,8 @@ export class EventsController {
     const stats =
       await this.eventsService.getCurrentOrganizerEventsStats(userId);
     return {
-      data: { ...stats, avgReviews: 0 },
+      ...stats,
+      avgReviews: 0,
     };
   }
 
