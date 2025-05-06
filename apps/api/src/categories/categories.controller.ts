@@ -14,6 +14,7 @@ import {
   UpdateEventCategoryDto,
 } from 'src/events/event.dto';
 import { isAdmin } from 'src/common/decorators/is-admin.decorator';
+import { isPublic } from 'src/common/decorators/is-public.decorator';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -29,6 +30,7 @@ export class CategoriesController {
     description: 'Event updated successfully',
   })
   @Get()
+  @isPublic()
   async getAllCategories() {
     const categories = await this.categoriesService.getAllEventCategories();
     return {

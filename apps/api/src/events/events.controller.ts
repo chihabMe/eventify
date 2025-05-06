@@ -24,6 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomBadRequestException } from 'src/common/exceptions/custom-badrequest.exception';
 import { isOrganizer } from 'src/common/decorators/is-organizer.decorator';
+import { isPublic } from 'src/common/decorators/is-public.decorator';
 
 @ApiTags('events')
 @Controller('events')
@@ -80,6 +81,7 @@ export class EventsController {
   }
 
   @Get()
+  @isPublic()
   @ApiOperation({
     summary: 'Get all events',
     description: 'Get a list of all events',
@@ -178,11 +180,12 @@ export class EventsController {
     type: CreateEventDto,
   })
   @Get(':slug')
+  @isPublic()
   async getEventBySlug(
     @Param('slug') slug: string,
     @Request() req: ExpressRequest,
   ) {
-    const userId = req.user!.id;
+    const userId = req?.user?.id;
     const event = await this.eventsService.getEventDetailsWithSlug(
       slug,
       userId,

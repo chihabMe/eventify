@@ -22,7 +22,7 @@ export class EventsService {
     private readonly reviewsService: ReviewsService,
   ) {}
 
-  async getEventDetailsWithSlug(slug: string, userId) {
+  async getEventDetailsWithSlug(slug: string, userId?: string) {
     const event = await this.prismaService.event.findUnique({
       where: {
         slug,
@@ -57,13 +57,14 @@ export class EventsService {
         errors: [{ field: 'slug', message: 'Event not found' }],
       });
     }
-    const existingBookingForTheUser =
-      await this.prismaService.booking.findFirst({
-        where: {
-          eventId: event.id,
-          userId,
-        },
-      });
+    const existingBookingForTheUser = userId
+      ? await this.prismaService.booking.findFirst({
+          where: {
+            eventId: event.id,
+            userId,
+          },
+        })
+      : null;
     const booked = existingBookingForTheUser !== null;
     return { ...event, booked };
   }

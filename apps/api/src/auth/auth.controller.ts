@@ -13,7 +13,6 @@ import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './auth.dto';
 import { jwtConstants } from 'src/common/constants';
-// import { AuthGuard } from '../common/guard/auth.guard';
 import { isPublic } from 'src/common/decorators/is-public.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
