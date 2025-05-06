@@ -46,7 +46,7 @@ export class EventsController {
     type: CreateEventDto,
   })
   @UseInterceptors(FileInterceptor('image'))
-  @Roles(Role.ORGANIZER, Role.ADMIN)
+  @isOrganizer()
   async create(
     @Body() data: CreateEventDto,
     @Request() req: ExpressRequest,
@@ -55,7 +55,7 @@ export class EventsController {
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
           new FileTypeValidator({
-            fileType: '.(png|jpeg|jpg)',
+            fileType: '.(png|jpeg|jpg,webp)',
           }),
         ],
         errorHttpStatusCode: 422, // Unprocessable Entity
