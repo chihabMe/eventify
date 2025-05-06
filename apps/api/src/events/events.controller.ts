@@ -143,9 +143,28 @@ export class EventsController {
   @isOrganizer()
   async getCurrentLoggedOrganizerEvents(@Request() req: ExpressRequest) {
     const userId = req.user!.id;
-    const events = await this.eventsService.getCurrentOrganizer(userId);
+    const events = await this.eventsService.getCurrentOrganizerEvents(userId);
+    return events;
+  }
+
+  @ApiOperation({
+    summary: 'Get current logged in organizer events stats',
+    description:
+      'This route will return the stats  for the current logged in organizer',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Event list  fetched successfully',
+    type: CreateEventDto,
+  })
+  @Get('/me/stats')
+  @isOrganizer()
+  async getCurrentLoggedOrgainzerEventsStats(@Request() req: ExpressRequest) {
+    const userId = req.user!.id;
+    const stats =
+      await this.eventsService.getCurrentOrganizerEventsStats(userId);
     return {
-      data: events,
+      data: { ...stats, avgReviews: 0 },
     };
   }
 

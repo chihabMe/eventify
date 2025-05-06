@@ -15,6 +15,7 @@ import { BookingsService } from './bookings.service';
 import { Request, Response } from 'express';
 import { EmailService } from 'src/email/email.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { isUser } from 'src/common/decorators/is-user.decorator';
 
 @ApiTags('Bookings')
 @Controller('bookings')
@@ -23,6 +24,22 @@ export class BookingsController {
     private readonly bookingsService: BookingsService,
     private readonly emailService: EmailService,
   ) {}
+
+  @Get(':eventId')
+  @ApiOperation({
+    summary: 'get all bookings for the event',
+    description: 'get all bookings for the event',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'list of bookings for the event',
+  })
+  async getAllEventBookings(@Param('eventId') eventId: string) {
+    const bookings = await this.bookingsService.getAllEventBookings(eventId);
+    return {
+      data:bookings,
+    };
+  }
 
   @Post(':eventId')
   @ApiOperation({
@@ -33,6 +50,7 @@ export class BookingsController {
     status: 201,
     description: 'Booking created successfully',
   })
+  @isUser()
   async createBooking(@Req() req: Request, @Param('eventId') eventId: string) {
     const userId = req.user!.id;
     try {

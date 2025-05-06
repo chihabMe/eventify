@@ -90,4 +90,13 @@ export class ReviewsService {
       where: { id },
     });
   }
+  async getTotalOrganizerReviews(organizerId: string) {
+    return this.prismaService.review.count({
+      where: {
+        event: {
+          organizerId,
+        },
+      },
+    });
+  }
 }

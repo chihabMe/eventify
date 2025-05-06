@@ -193,4 +193,27 @@ export class BookingsService {
     doc.end();
     return stream;
   }
+  getTotalOrganizerBookings = (organizerId: string) => {
+    return this.prisma.booking.count({
+      where: {
+        event: {
+          organizerId,
+        },
+      },
+    });
+  };
+   getAllEventBookings = (eventId:string)=>{
+    return this.prisma.booking.findMany({
+      where:{eventId},
+      include:{
+        user:{
+          select:{
+            email:true,
+            firstName:true,
+            lastName:true,
+          }
+        }
+      }
+    })
+  }
 }

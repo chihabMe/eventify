@@ -10,12 +10,16 @@ import { CustomBadRequestException } from 'src/common/exceptions/custom-badreque
 import { Role, User } from 'generated/prisma';
 import { CategoriesService } from 'src/categories/categories.service';
 import { PAGE_SIZE } from 'src/common/constants';
+import { BookingsService } from 'src/bookings/bookings.service';
+import { ReviewsService } from 'src/reviews/reviews.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly categoriesService: CategoriesService,
+    private readonly bookingService: BookingsService,
+    private readonly reviewsService: ReviewsService,
   ) {}
 
   async getEventDetailsWithSlug(slug: string, userId) {
@@ -187,11 +191,25 @@ export class EventsService {
     });
   }
 
-  async getCurrentOrganizer(organizerId: string) {
+  async getCurrentOrganizerEvents(organizerId: string) {
     return this.prismaService.event.findMany({
       where: {
         organizerId,
       },
     });
+  }
+  async getCurrentOrganizerEventsStats(organizerId: string) {
+    const eventsCount = await this.prismaService.event.count({
+      where: { organizerId },
+    });
+    const bookingsCount =
+      await this.bookingService.getTotalOrganizerBookings(organizerId);
+    const reviewsCount =
+      await this.reviewsService.getTotalOrganizerReviews(organizerId);
+    return {
+      eventsCount,
+      bookingsCount,
+      reviewsCount,
+    };
   }
 }
