@@ -20,14 +20,13 @@ async function bootstrap() {
   app.use(helmet());
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   app.use(cookieParser());
-  if(process.env.CLIENT_URL){
 
   app.enableCors({
     origin: [process.env.CLIENT_URL??"http://localhost:8080"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
-  }
+
   app.useGlobalPipes(new ZodValidationPipe());
   app.useGlobalFilters(new CustomBadRequestExceptionFilter());
 
