@@ -1,29 +1,26 @@
-# FROM node:20-alpine
-#FROM node:lts-alpine3.17
-#FROM node:slim
-FROM node:20-alpine 
-
-# RUN apt-get update -y \
-# && apt-get install -y openssl
-
-
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+# Only copy files you actually have
+COPY package.json ./
+# If you generate a lock‑file later, switch to `npm ci` here
 RUN npm install
 
-# Copy prisma schema before the rest of the code
+# Prisma generation
 COPY prisma ./prisma/
-
-# Generate Prisma client during build
 RUN npx prisma generate
 
-# Now copy the rest of the application
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Command is now overridden by docker-compose
-CMD ["node", "dist/main"]
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/generated ./generated
+
+CMD ["npm", "run","start:prod"]
+
