@@ -4,3 +4,4 @@ volumes
 node_modules
 .nx
 .env
+volumes
