@@ -23,7 +23,7 @@ async function bootstrap() {
   if(process.env.CLIENT_URL){
 
   app.enableCors({
-    origin: process.env.CLIENT_URL,
+    origin: [process.env.CLIENT_URL??"http://localhost:8080"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
@@ -51,6 +51,6 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 8000);
+  await app.listen(process.env.PORT ?? 8081);
 }
 bootstrap();

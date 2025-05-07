@@ -1,5 +1,5 @@
 // axiosClient.ts
-import { API } from '@/constants';
+// import { API } from '@/constants';
 import axios, {
   AxiosError,
   AxiosInstance,
@@ -9,7 +9,6 @@ import axios, {
 
 
 export const axiosInstance: AxiosInstance = axios.create({
-  baseURL: API,
   withCredentials: true,
   timeout: 10000,
 });
