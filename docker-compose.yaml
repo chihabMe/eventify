@@ -1,12 +1,38 @@
 version: "3.8"
-
 services:
+  # Build client first
+  client:
+    build:
+      context: ./apps/client
+    container_name: eventify-client-builder
+    volumes:
+      - client-build:/app/dist
+    # Command to exit after build completes
+    command: ["echo", "Client build completed"]
+    # This ensures the container stops after building
+    restart: "no"
+    env_file:
+      - .env
+
+  # Nginx depends on client build
+  nginx:
+    image: nginx:stable-alpine
+    container_name: eventify-nginx
+    ports:
+      - "8888:80"
+    volumes:
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - client-build:/usr/share/nginx/html:ro
+    depends_on:
+      - client
+
+  # Backend API
   backend:
     build:
       context: ./apps/api
     container_name: eventify-api
-    # ports:
-    #   - "8000:8000"
+    env_file:
+      - .env
     environment:
       - PORT=${PORT}
       - DATABASE_URL=${DATABASE_URL}
@@ -14,24 +40,10 @@ services:
       - CLIENT_URL=${CLIENT_URL}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - EMAIL_FROM=${EMAIL_FROM}
-    env_file:
-      - .env
-  client:
-    build:
-      context: ./apps/client
-    container_name: eventify-client
-    env_file:
-    - .env
-    volumes:
-    - "./volumes/client/build:/app/dist"
-  nginx:
-    image: nginx:stable-alpine
-    container_name: eventify-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - "./volumes/client/build:/usr/share/nginx/html:ro"
-      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+    depends_on:
+      - nginx
 
-    # volumes:
-    #   - ./backend:/app
+# Named volume for sharing build files between containers
+volumes:
+  client-build:
+
