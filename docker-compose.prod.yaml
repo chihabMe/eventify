@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  client:
+    build:
+      context: ./apps/client
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    image: chihabs/eventify-client:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+
+  backend:
+    build:
+      context: ./apps/api
+    image: chihabs/eventify-api:latest
+    container_name: eventify-api
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - CLIENT_URL=${CLIENT_URL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: chihabs/eventify-nginx:latest
+    container_name: eventify-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - client
+      - backend

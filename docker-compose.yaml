@@ -6,7 +6,7 @@ services:
       context: ./apps/client
       args:
         - VITE_API_URL=${VITE_API_URL}  
-    container_name: eventify-client-builder
+    #container_name: eventify-client-builder
       #volumes:
       #- "./volumes/dist:/app/dist"  # Map the dist directory
     command: ["echo", "Client build completed"]
