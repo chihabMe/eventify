@@ -15,7 +15,6 @@ import { LoginDto } from './auth.dto';
 import { jwtConstants } from 'src/common/constants';
 import { isPublic } from 'src/common/decorators/is-public.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
