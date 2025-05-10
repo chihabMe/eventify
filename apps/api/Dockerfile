@@ -1,11 +1,15 @@
 FROM node:20-alpine AS build
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
-# Only copy files you actually have
-COPY package.json ./
-# If you generate a lock‑file later, switch to `npm ci` here
-RUN npm install
+
+COPY package.json package-lock.json* ./
+
+
+## produciton install
+RUN npm ci
 
 # Prisma generation
 COPY prisma ./prisma/
@@ -21,6 +25,9 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/generated ./generated
+
+# exposing the 8000 port
+EXPOSE 8000
 
 CMD ["node","dist/main"]
 
