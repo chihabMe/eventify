@@ -1,33 +1,37 @@
 FROM node:20-alpine AS build
 
-RUN apk add --no-cache openssl
-
 WORKDIR /app
 
+# Install pnpm
+RUN npm install -g pnpm
 
-COPY package.json package-lock.json* ./
+# Copy lockfile and package.json
+COPY package.json pnpm-lock.yaml ./
 
+# Install deps
+RUN pnpm install --frozen-lockfile
 
-## produciton install
-RUN npm ci
+# Copy the rest of the app
+COPY . .
 
-# Prisma generation
-COPY prisma ./prisma/
+# Prisma generation (if needed)
 RUN npx prisma generate
 
-COPY . .
-RUN npm run build
+# Build your app
+RUN pnpm build
 
+# --- Runtime stage ---
 FROM node:20-alpine AS runtime
 
 WORKDIR /app
-COPY --from=build /app/dist ./dist
+
+# Install pnpm again if needed at runtime
+RUN npm install -g pnpm
+
+# Copy built app and deps
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/generated ./generated
+COPY --from=build /app/dist ./dist
 
-# exposing the 8000 port
-EXPOSE 8000
-
-CMD ["node","dist/main"]
-
+CMD ["node", "dist/main"]
